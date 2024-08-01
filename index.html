@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>52x7 Grid</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 4px;
+            width: fit-content;
+        }
+        .box {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background-color: #161b22;
+            border-radius: 3px;
+        }
+        .box.active {
+            background-color: #39d353;
+        }
+        .save-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid" id="grid"></div>
+    <button class="save-button" id="saveButton">Save</button>
+
+    <script>
+        const grid = document.getElementById('grid');
+        let isMouseDown = false;
+        let isRightClick = false;
+    
+        for (let i = 0; i < 52 * 7; i++) {
+            const box = document.createElement('div');
+            box.classList.add('box');
+            box.addEventListener('mousedown', (event) => {
+                isMouseDown = true;
+                isRightClick = event.button === 2;
+                if (isRightClick) {
+                    box.classList.remove('active');
+                } else {
+                    box.classList.add('active');
+                }
+            });
+            box.addEventListener('mouseover', () => {
+                if (isMouseDown) {
+                    if (isRightClick) {
+                        box.classList.remove('active');
+                    } else {
+                        box.classList.add('active');
+                    }
+                }
+            });
+            grid.appendChild(box);
+        }
+    
+        document.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+    
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+    
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const boxes = document.querySelectorAll('.box');
+            const data = [];
+            for (let i = 0; i < boxes.length; i++) {
+                data.push(boxes[i].classList.contains('active') ? 1 : 0);
+            }
+            const csvContent = "data:text/csv;charset=utf-8," + data.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'grid_data.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+
+    
+</body>
+</html>
