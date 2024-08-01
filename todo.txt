@@ -1,7 +1,0 @@
-- get a drawing
-- convert it to a lower resoulution (7x52)
-- greyscale the image
-
-- get value of everything
-
-- commit on those specific dates
