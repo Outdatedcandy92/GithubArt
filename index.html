@@ -76,20 +76,46 @@
         });
     
         document.getElementById('saveButton').addEventListener('click', () => {
-            const boxes = document.querySelectorAll('.box');
-            const data = [];
-            for (let i = 0; i < boxes.length; i++) {
-                data.push(boxes[i].classList.contains('active') ? 1 : 0);
-            }
-            const csvContent = "data:text/csv;charset=utf-8," + data.join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', 'grid_data.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+        const boxes = document.querySelectorAll('.box');
+        const data = [];
+        for (let i = 0; i < boxes.length; i++) {
+            data.push(boxes[i].classList.contains('active') ? 1 : 0);
+        }
+        const csvContent = data.join(",");
+        const pyContent = `
+import subprocess
+from datetime import datetime, timedelta
+
+pixel_values = [${csvContent}]
+
+def create_commits(pixel_values, year):
+    start_date = datetime(year, 1, 1) - timedelta(days=datetime(year, 1, 1).weekday() + 1)
+    
+    for i, value in enumerate(pixel_values):
+        if value == 1:
+            weeks = i // 7
+            days = i % 7
+            commit_date = start_date + timedelta(weeks=weeks, days=days)
+            commit_date_str = commit_date.strftime('%Y-%m-%dT%H:%M:%S')
+            subprocess.run(['git', 'commit', '--allow-empty', '-m', 'Commit for pixel art', '--date', commit_date_str])
+
+def add_single_commit(message, commit_date):
+    commit_date_str = commit_date.strftime('%Y-%m-%dT%H:%M:%S')
+    subprocess.run(['git', 'commit', '--allow-empty', '-m', message, '--date', commit_date_str])
+
+yearval = int(input('Enter year: '))
+
+create_commits(pixel_values, yearval)
+
+        `;
+        const blob = new Blob([pyContent], { type: 'text/x-python' });
+        const link = document.createElement('a');
+        link.setAttribute('href', URL.createObjectURL(blob));
+        link.setAttribute('download', 'script.py');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
     </script>
 
     
